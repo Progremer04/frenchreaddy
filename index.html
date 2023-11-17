@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
     <meta charset="utf-8">
-    <title>Correction de Prononciation en Français</title>
+    <title>Speech Recognition and Correction</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,8 +24,8 @@
     </style>
 </head>
 <body>
-    <h1>Correction de Prononciation en Français</h1>
-    <button id="startButton">Commencer l'écoute</button>
+    <h1>Speech Recognition and Correction (French)</h1>
+    <button id="startButton">Start Listening</button>
     <div id="output"></div>
 
     <script>
@@ -35,84 +35,29 @@
 
         recognition.lang = 'fr-FR'; // Set the language to French
 
-        recognition.onresult = async (event) => {
+        recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
-            output.innerHTML = `<p>Texte reconnu : ${transcript}</p>`;
-
-            // Correct the transcript using Google Cloud Natural Language API
-            const correctedTranscript = await correctLanguage(transcript);
-            speakText(correctedTranscript);
+            output.innerHTML = `<p>Recognized text: ${transcript}</p>`;
+            speakText(transcript);
         };
 
         recognition.onend = () => {
             startButton.disabled = false;
-            startButton.textContent = 'Commencer l\'écoute';
+            startButton.textContent = 'Start Listening';
         };
 
         startButton.addEventListener('click', () => {
             startButton.disabled = true;
-            startButton.textContent = 'En écoute...';
+            startButton.textContent = 'Listening...';
             output.innerHTML = '';
             recognition.start();
         });
 
-        async function correctLanguage(text) {
-            // Replace with your Google Cloud Natural Language API key
-            const apiKey = 'YOUR_GOOGLE_CLOUD_API_KEY';
-            const apiUrl = `https://language.googleapis.com/v1/documents:analyzeSyntax?key=${apiKey}`;
-
-            const requestBody = {
-                document: {
-                    type: 'PLAIN_TEXT',
-                    content: text,
-                },
-                encodingType: 'UTF8',
-            };
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-            });
-
-            const data = await response.json();
-            const correctedText = data.tokens.map(token => token.text.content).join(' ');
-            return correctedText;
-        }
-
         function speakText(text) {
-            // Replace with your Google Text-to-Speech API key
-            const apiKey = 'YOUR_GOOGLE_CLOUD_API_KEY';
-            const audioUrl = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
-            
-            const requestBody = {
-                input: {
-                    text: text,
-                },
-                voice: {
-                    languageCode: 'fr-FR',
-                    name: 'fr-FR-Wavenet-A',
-                },
-                audioConfig: {
-                    audioEncoding: 'LINEAR16',
-                },
-            };
-
-            fetch(audioUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody),
-            })
-            .then(response => response.arrayBuffer())
-            .then(data => {
-                const audioBlob = new Blob([data], { type: 'audio/mpeg' });
-                const audioElement = new Audio(URL.createObjectURL(audioBlob));
-                audioElement.play();
-            });
+            const speechSynthesis = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'fr-FR';
+            speechSynthesis.speak(utterance);
         }
     </script>
 </body>
